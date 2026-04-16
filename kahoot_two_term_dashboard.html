@@ -1,0 +1,332 @@
+
+<h2 class="sr-only">Kahoot Quiz Analytics Dashboard for FA2025 & SP2026</h2>
+
+
+<style>
+  /*.kd-root { font-family: var(--font-sans); padding: 1rem 0; }/*
+  .kd-root {
+  font-family: var(--font-sans);
+  padding: 1rem 1rem;
+
+  max-width: 1200px;   /* controls page narrowness */
+  margin: 0 auto;     /* centers the dashboard */
+  flex: 1;
+}
+  .kd-tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .kd-tab { padding: 8px 16px; font-size: 13px; border: none; background: none; cursor: pointer; color: var(--color-text-secondary); border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+  .kd-tab.active { color: var(--color-text-primary); border-bottom: 2px solid #378ADD; font-weight: 500; }
+  .kd-section { display: none; }
+  .kd-section.active { display: block; }
+  .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 1.5rem; }
+  .met { background: var(--color-background-secondary); border-radius: 8px; padding: 12px 14px; }
+  .met-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .met-val { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .met-sub { font-size: 11px; color: var(--color-text-tertiary); margin-top: 2px; }
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem; }
+  .chart-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 16px; }
+  .chart-title { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .insight-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 16px; }
+  .insight-h { font-size: 16px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 8px; }
+  .insight-p { font-size: 15px; color: var(--color-text-secondary); line-height: 1.7; }
+  .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; margin: 2px; }
+  .tag-blue { background: #E6F1FB; color: #0C447C; }
+  .tag-green { background: #EAF3DE; color: #27500A; }
+  .tag-amber { background: #FAEEDA; color: #633806; }
+  .tag-coral { background: #FAECE7; color: #712B13; }
+  .legend { display: flex; gap: 16px; margin-bottom: 10px; font-size: 12px; color: var(--color-text-secondary); }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .full-chart { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; padding: 16px; margin-bottom: 1.5rem; }
+  @media (max-width: 600px) {
+    .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .chart-row { grid-template-columns: 1fr; }
+    .insight-grid { grid-template-columns: 1fr; }
+  }
+
+/* Overview charts: allow graceful reflow on narrower desktop windows */
+#tab-overview .chart-row {
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+}
+
+.kd-footer {
+  margin-top: 1.5rem;
+  padding: 0.5rem 0 0.75rem;
+
+  border-top: 0.5px solid var(--color-border-tertiary);
+
+  font-size: 11px;
+  opacity: 0.35;
+  line-height: 1.4;
+  color: var(--color-text-tertiary);
+  text-align: center;
+
+ width: 100%;
+}
+</style>
+
+<div class="kd-root">
+  <div style="margin-bottom:1.2rem;">
+    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary);">Kahoot! Learning Analytics</div>
+    <div style="font-size:13px;color:var(--color-text-secondary);margin-top:3px;">47 Total Quizzes in ITSC 1316, ITSC 2325, ITSY 1300</div>
+ </div>
+
+  <div class="kd-tabs">
+    <button class="kd-tab active" onclick="showTab('overview')">Overview</button>
+    <button class="kd-tab" onclick="showTab('trends')">Trends</button>
+    <button class="kd-tab" onclick="showTab('prepost')">PRE vs POST</button>
+    <button class="kd-tab" onclick="showTab('insights')">Key Insights</button>
+  </div>
+
+  <div id="tab-overview" class="kd-section active">
+    <div class="metrics">
+      <div class="met"><div class="met-label">Total Quizzes</div><div class="met-val">47</div><div class="met-sub">31 FA &bull; 16 SP</div></div>
+      <div class="met"><div class="met-label">Avg Correct Rate</div><div class="met-val">38.5%</div><div class="met-sub">FA: 33.8% &rarr; SP: 47.7%</div></div>
+      <div class="met"><div class="met-label">Total Questions</div><div class="met-val">843</div><div class="met-sub">avg 18 per quiz</div></div>
+      <div class="met"><div class="met-label">Avg Engagement</div><div class="met-val">10.1</div><div class="met-sub">players per session</div></div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title">Correct Rate by Term</div>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#378ADD;"></span>Fall 2025</span>
+          <span><span class="legend-dot" style="background:#1D9E75;"></span>Spring 2026</span>
+        </div>
+        <div style="position:relative;height:200px;"><canvas id="termBar" role="img" aria-label="Bar chart: Fall 2025 average correct rate 33.8%, Spring 2026 47.7%">Fall 2025: 33.8%, Spring 2026: 47.7%</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Quizzes Per Month</div>
+        <div style="position:relative;height:220px;"><canvas id="monthBar" role="img" aria-label="Bar chart of quizzes per month: Oct 14, Nov 13, Dec 4, Feb 9, Mar 7">Oct:14, Nov:13, Dec:4, Feb:9, Mar:7</canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title">Avg Players per Quiz</div>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#378ADD;"></span>Fall 2025</span>
+          <span><span class="legend-dot" style="background:#1D9E75;"></span>Spring 2026</span>
+        </div>
+        <div style="position:relative;height:180px;"><canvas id="playersBar" role="img" aria-label="Average players: Fall 2025 10.7, Spring 2026 9.1">FA: 10.7, SP: 9.1</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Correct vs Incorrect (Overall)</div>
+        <div style="position:relative;height:180px;"><canvas id="donut" role="img" aria-label="Donut chart: 38.5% correct, 61.5% incorrect across all quizzes">38.5% correct, 61.5% incorrect</canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-trends" class="kd-section">
+    <div class="full-chart">
+      <div class="chart-title">Correct rate per quiz - chronological (all 47 quizzes)</div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#378ADD;"></span>Fall 2025</span>
+        <span><span class="legend-dot" style="background:#1D9E75;"></span>Spring 2026</span>
+        <span><span class="legend-dot" style="background:#BA7517;"></span>3-quiz moving avg</span>
+      </div>
+      <div style="position:relative;height:300px;"><canvas id="trendLine" role="img" aria-label="Line chart showing correct rate per quiz over time, with upward trend from Fall 2025 to Spring 2026">Correct Rate per Quiz.</canvas></div>
+    </div>
+
+    <div class="full-chart">
+      <div class="chart-title">Avg Correct Rate - Weekly View</div>
+      <div style="position:relative;height:220px;"><canvas id="weekChart" role="img" aria-label="Bar chart of average correct rate by month">Weekly Correct Rates</canvas></div>
+    </div>
+  </div>
+
+  <div id="tab-prepost" class="kd-section">
+    <div class="metrics" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <div class="met"><div class="met-label">PRE-quiz avg</div><div class="met-val">30.4%</div><div class="met-sub">5 PRE sessions</div></div>
+      <div class="met"><div class="met-label">POST-quiz avg</div><div class="met-val">35.8%</div><div class="met-sub">8 POST sessions</div></div>
+      <div class="met" style="background:var(--color-background-info);"><div class="met-label">Learning gain</div><div class="met-val" style="color:#0C447C;">+5.4 pts</div><div class="met-sub" style="color:#185FA5;">17.8% improvement</div></div>
+    </div>
+
+    <div class="full-chart">
+      <div class="chart-title">PRE vs POST Aracy by Topic</div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#B5D4F4;"></span>PRE-quiz</span>
+        <span><span class="legend-dot" style="background:#378ADD;"></span>POST-quiz</span>
+      </div>
+      <div style="position:relative;height:280px;"><canvas id="prepostBar" role="img" aria-label="Grouped bar chart comparing PRE and POST quiz scores for file permissions and block devices topics">PRE vs POST comparison</canvas></div>
+    </div>
+
+    <div class="insight-card" style="margin-top:0;">
+      <div class="insight-h">Paired session evidence</div>
+      <div class="insight-p">
+        PRE/POST Pairings Found Across: <span class="tag tag-blue">Control Access to Files</span><span class="tag tag-blue">Managing Block Devices</span><span class="tag tag-blue">Config &amp; Secure SSH</span><span class="tag tag-blue">NFS &amp; Automounter</span><span class="tag tag-blue">Block Devices (SP)</span>. These represent the strongest evidence of Kahoot! facilitating learning - students started with ~30% accuracy and finished above 35%.
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-insights" class="kd-section">
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-h">Term-over-term Improvement</div>
+        <div class="insight-p">Average accuracy rose from <strong style="color:var(--color-text-primary)">33.8%</strong> (FA 2025) to <strong style="color:var(--color-text-primary)">47.7%</strong> (SP 2026) - a 41% relative gain. This suggests the Kahoot! practice cadence is building stronger foundational recall across terms.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-h">Consistent PRE→POST gains</div>
+        <div class="insight-p">Every topic with paired PRE/POST quizzes showed improvement. File Permissions: 35% → 47%. Block Devices: 29% → 24–38%. SSH: 31% → 37%. The pattern holds even when topics are revisited across different class sections.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-h">High quiz frequency</div>
+        <div class="insight-p">47 quizzes over ~5 months means ~2–3 sessions per week. Peak was Oct–Nov 2025 with 27 quizzes in 2 months. This aligns with the established "retrieval practice" learning effect - frequent low-stakes testing boosts retention.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-h">Hardest topics identified</div>
+        <div class="insight-p">Lowest scoring quizzes: <span class="tag tag-coral">Swap Space PRE (17.9%)</span><span class="tag tag-coral">InstallRHEL (16.1%)</span><span class="tag tag-coral">Virtualization (21.2%)</span>. These are strong candidates for additional review activities or supplemental Kahoot! rounds.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-h">Strongest mastery topics</div>
+        <div class="insight-p">Highest performing: <span class="tag tag-green">Control Access (SP eve, 79.2%)</span><span class="tag tag-green">Manage Users (68.8%)</span><span class="tag tag-green">Create/Edit Text (72.9%)</span><span class="tag tag-green">Task Scheduling (54.1%)</span>. Spring quizzes consistently outperform Fall equivalents.</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-h">Evidence for portfolio / review</div>
+        <div class="insight-p">Data shows: <strong style="color:var(--color-text-primary)">1)</strong> Frequent formative use (2–3×/week), <strong style="color:var(--color-text-primary)">2)</strong> Deliberate PRE/POST design, <strong style="color:var(--color-text-primary)">3)</strong> Measurable accuracy gains, <strong style="color:var(--color-text-primary)">4)</strong> Topic-specific diagnosis of gaps - all hallmarks of effective EdTech integration.</div>
+      </div>
+    </div>
+  </div>
+</div>
+  <footer class="kd-footer">
+  Made on April 16, 2026 by Andrew Spencer with a little help from AI friends
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+function showTab(id) {
+  document.querySelectorAll('.kd-tab').forEach((t,i) => t.classList.toggle('active', ['overview','trends','prepost','insights'][i]===id));
+  document.querySelectorAll('.kd-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+const textColor = isDark ? '#aaa' : '#888';
+
+const allData = [
+  {date:'2025-10-01',pct:37.9,term:'FA',name:'TextHandling'},
+  {date:'2025-10-07',pct:31.3,term:'FA',name:'Ch5-Post'},
+  {date:'2025-10-13',pct:35.0,term:'FA',name:'PRE-FilePerms1'},
+  {date:'2025-10-13',pct:47.3,term:'FA',name:'POST-FilePerms1'},
+  {date:'2025-10-14',pct:28.9,term:'FA',name:'PRE-BlockDev'},
+  {date:'2025-10-14',pct:45.8,term:'FA',name:'FilePerms-20s'},
+  {date:'2025-10-15',pct:39.4,term:'FA',name:'PRE-FilePerms2'},
+  {date:'2025-10-16',pct:24.2,term:'FA',name:'POST-BlockDev1'},
+  {date:'2025-10-16',pct:17.9,term:'FA',name:'PRE-SwapSpace'},
+  {date:'2025-10-21',pct:23.3,term:'FA',name:'POST-SwapSpace'},
+  {date:'2025-10-23',pct:27.1,term:'FA',name:'StorageStack'},
+  {date:'2025-10-27',pct:36.5,term:'FA',name:'POST-NFS'},
+  {date:'2025-10-28',pct:25.8,term:'FA',name:'NetworkFileSys'},
+  {date:'2025-10-29',pct:42.6,term:'FA',name:'CtrlSrvDaemon'},
+  {date:'2025-11-04',pct:31.9,term:'FA',name:'BootProcess'},
+  {date:'2025-11-04',pct:37.2,term:'FA',name:'POST-SSH'},
+  {date:'2025-11-04',pct:33.3,term:'FA',name:'NetworkingQ1'},
+  {date:'2025-11-05',pct:31.0,term:'FA',name:'PRE-SSH'},
+  {date:'2025-11-10',pct:48.2,term:'FA',name:'Networking-20s'},
+  {date:'2025-11-10',pct:37.5,term:'FA',name:'NetworkingQ1b'},
+  {date:'2025-11-18',pct:42.5,term:'FA',name:'IDFileSys'},
+  {date:'2025-11-19',pct:38.3,term:'FA',name:'InstallSoftware'},
+  {date:'2025-11-19',pct:21.2,term:'FA',name:'Virtualization'},
+  {date:'2025-11-20',pct:16.1,term:'FA',name:'InstallRHEL'},
+  {date:'2025-11-25',pct:23.3,term:'FA',name:'IDFileSys2'},
+  {date:'2025-11-25',pct:38.5,term:'FA',name:'AccessFileSys1'},
+  {date:'2025-11-26',pct:34.8,term:'FA',name:'AccessFileSys2'},
+  {date:'2025-12-02',pct:28.9,term:'FA',name:'Intro2Git'},
+  {date:'2025-12-02',pct:23.8,term:'FA',name:'Containers'},
+  {date:'2025-12-02',pct:48.8,term:'FA',name:'AnalyzeSrv1'},
+  {date:'2025-12-03',pct:50.0,term:'FA',name:'AnalyzeSrv2'},
+  {date:'2026-02-04',pct:42.4,term:'SP',name:'ManPages'},
+  {date:'2026-02-09',pct:39.5,term:'SP',name:'Lesson2'},
+  {date:'2026-02-09',pct:54.1,term:'SP',name:'TaskScheduling'},
+  {date:'2026-02-16',pct:57.4,term:'SP',name:'Lesson03'},
+  {date:'2026-02-16',pct:30.6,term:'SP',name:'SystemLogs'},
+  {date:'2026-02-18',pct:35.1,term:'SP',name:'Backup1'},
+  {date:'2026-02-23',pct:52.9,term:'SP',name:'Lesson4'},
+  {date:'2026-02-23',pct:72.9,term:'SP',name:'CreateEditText'},
+  {date:'2026-02-23',pct:38.8,term:'SP',name:'Backup2'},
+  {date:'2026-03-02',pct:36.9,term:'SP',name:'Ch5-Post-SP'},
+  {date:'2026-03-02',pct:68.8,term:'SP',name:'ManageUsers'},
+  {date:'2026-03-09',pct:36.0,term:'SP',name:'Lesson06'},
+  {date:'2026-03-09',pct:49.4,term:'SP',name:'CH6-POST'},
+  {date:'2026-03-09',pct:79.2,term:'SP',name:'FilePerms-SP-eve'},
+  {date:'2026-03-23',pct:33.8,term:'SP',name:'Lesson07'},
+  {date:'2026-03-23',pct:34.9,term:'SP',name:'BlockDev-SP'},
+];
+
+const faColor = '#378ADD', spColor = '#1D9E75', maColor = '#BA7517';
+
+new Chart(document.getElementById('termBar'), {
+  type:'bar',
+  data:{labels:['Fall 2025','Spring 2026'],
+    datasets:[{data:[33.8,47.7],backgroundColor:[faColor,spColor],borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>v.raw.toFixed(1)+'%'}}},scales:{y:{min:0,max:70,ticks:{callback:v=>v+'%',color:textColor},grid:{color:gridColor}},x:{ticks:{color:textColor},grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('monthBar'), {
+  type:'bar',
+  data:{labels:['Oct 25','Nov 25','Dec 25','Feb 26','Mar 26'],
+    datasets:[{data:[14,13,4,9,7],backgroundColor:[faColor,faColor,faColor,spColor,spColor],borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{stepSize:2,color:textColor},grid:{color:gridColor}},x:{ticks:{color:textColor},grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('playersBar'), {
+  type:'bar',
+  data:{labels:['Fall 2025','Spring 2026'],datasets:[{data:[10.7,9.1],backgroundColor:[faColor,spColor],borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:15,ticks:{color:textColor},grid:{color:gridColor}},x:{ticks:{color:textColor},grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('donut'), {
+  type:'doughnut',
+  data:{labels:['Correct','Incorrect'],datasets:[{data:[38.5,61.5],backgroundColor:[faColor,'rgba(180,180,180,0.3)'],borderWidth:0,borderRadius:4}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>v.label+': '+v.raw+'%'}}},cutout:'65%'}
+});
+
+const labels = allData.map(d=>d.name);
+const vals = allData.map(d=>d.pct);
+const colors = allData.map(d=>d.term==='FA'?faColor:spColor);
+const movAvg = vals.map((v,i)=>{if(i<2)return null;return +((vals[i-2]+vals[i-1]+v)/3).toFixed(1);});
+
+new Chart(document.getElementById('trendLine'), {
+  type:'bar',
+  data:{labels,datasets:[
+    {type:'bar',data:vals,backgroundColor:colors,borderRadius:3,borderSkipped:false,label:'Quiz score',order:2},
+    {type:'line',data:movAvg,borderColor:maColor,borderWidth:2,pointRadius:0,tension:0.3,label:'3-quiz avg',order:1,fill:false}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>v.dataset.label+': '+v.raw+'%'}}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',color:textColor},grid:{color:gridColor}},x:{ticks:{display:false},grid:{display:false}}}}
+});
+
+const months=['Oct 25','Nov 25','Dec 25','Feb 26','Mar 26'];
+const monthAvg=[
+  allData.filter(d=>d.date.startsWith('2025-10')).reduce((a,d)=>a+d.pct,0)/14,
+  allData.filter(d=>d.date.startsWith('2025-11')).reduce((a,d)=>a+d.pct,0)/13,
+  allData.filter(d=>d.date.startsWith('2025-12')).reduce((a,d)=>a+d.pct,0)/4,
+  allData.filter(d=>d.date.startsWith('2026-02')).reduce((a,d)=>a+d.pct,0)/9,
+  allData.filter(d=>d.date.startsWith('2026-03')).reduce((a,d)=>a+d.pct,0)/7,
+].map(v=>+v.toFixed(1));
+
+new Chart(document.getElementById('weekChart'), {
+  type:'bar',
+  data:{labels:months,datasets:[{data:monthAvg,backgroundColor:[faColor,faColor,faColor,spColor,spColor],borderRadius:6,borderSkipped:false}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>v.raw.toFixed(1)+'%'}}},scales:{y:{min:0,max:70,ticks:{callback:v=>v+'%',color:textColor},grid:{color:gridColor}},x:{ticks:{color:textColor},grid:{display:false}}}}
+});
+
+const ppTopics=['FilePerms','BlockDev','SSH','NFS'];
+const preVals=[35.0,28.9,31.0,36.5];
+const postVals=[47.3,24.2,37.2,36.5];
+new Chart(document.getElementById('prepostBar'), {
+  type:'bar',
+  data:{labels:ppTopics,datasets:[
+    {label:'PRE',data:preVals,backgroundColor:'#B5D4F4',borderRadius:4,borderSkipped:false},
+    {label:'POST',data:postVals,backgroundColor:faColor,borderRadius:4,borderSkipped:false}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:v=>v.dataset.label+': '+v.raw.toFixed(1)+'%'}}},scales:{y:{min:0,max:60,ticks:{callback:v=>v+'%',color:textColor},grid:{color:gridColor}},x:{ticks:{color:textColor},grid:{display:false}}}}
+});
+
+  const d = new Date();
+  const formatted = d.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  document.getElementById('footer-date').textContent = formatted;
+
+</script>
